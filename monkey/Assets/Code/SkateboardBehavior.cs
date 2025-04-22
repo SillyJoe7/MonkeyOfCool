@@ -15,7 +15,7 @@ public class SkateboardBehaviour : MonoBehaviour
     [SerializeField] private float jumpForce = 100f;
 
     private float speed, turnInput, moveInput;
-    public bool Grounded;
+    public int Grounded = 0;
 
     public float turnAmount
     {
@@ -41,19 +41,33 @@ public class SkateboardBehaviour : MonoBehaviour
         transform.Rotate(Vector3.up * turnAmount * Time.deltaTime, Space.World);
         transform.Translate(transform.forward * speed * Time.deltaTime, Space.World);
 
-        
 
-        if (Input.GetKeyDown(KeyCode.Space) && Grounded)
+
+        if (Input.GetKeyDown(KeyCode.Space) && Grounded == 0)
         {
             GetComponent<Rigidbody>().AddForce(transform.up * jumpForce, ForceMode.Impulse);
-            Grounded = false;
+            Grounded = 1;
+        }
+        else if (Input.GetKeyDown(KeyCode.Space) && Grounded == 1)
+        {
+            GetComponent<Rigidbody>().AddForce(transform.forward * jumpForce, ForceMode.Impulse);
+            Grounded = 2;
         }
 
     }
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Ground")) {
-            Grounded = true;
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            Grounded = 0;
+        }
+        
+    }
+    private void OnCollisionStay(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Boost"))
+        {
+            GetComponent<Rigidbody>().AddForce(transform.forward * jumpForce/10, ForceMode.Impulse);
         }
     }
 

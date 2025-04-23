@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody))]
 public class SkateboardBehaviour : MonoBehaviour
 {
     [Tooltip("A float value determining the max speed this car can go forwards or backwards.")]
@@ -14,63 +15,110 @@ public class SkateboardBehaviour : MonoBehaviour
     [SerializeField] private bool onlyTurnWhileMoving = true;
     [SerializeField] private float jumpForce = 100f;
 
+    // New variable for controlling the up/down rotation speed
+    [Tooltip("The speed at which the skateboard rotates up and down.")]
+    [SerializeField] private float rotationSpeed = 5f;  // Adjust this in the inspector for smooth up/down rotation
+
+    // Child object reference
+    [SerializeField] private Transform childObject; // Drag the child object in the inspector
+
     private float speed, turnInput, moveInput;
     public int Grounded = 0;
+    private Rigidbody rb;
 
-    public float turnAmount
+    public float turnAmount => turnInput * turnRate;
+
+    void Start()
     {
-        get { return turnInput * turnRate; }
+        rb = GetComponent<Rigidbody>();
+
+        // Ensure child object is set (can be assigned in inspector)
+        if (childObject == null)
+        {
+            Debug.LogWarning("Child object not assigned in inspector!");
+        }
     }
-    // Update is called once per frame
+
     void Update()
     {
-        float targetSpeed; // Target speed to accelerate / decelerate towards.
-        turnInput = Input.GetAxisRaw("Horizontal"); // Get Horizontal input.
-        moveInput = Input.GetAxisRaw("Vertical"); // Get Vertical input.
-
+        float targetSpeed;
+        turnInput = Input.GetAxisRaw("Horizontal");
+        moveInput = Input.GetAxisRaw("Vertical");
         targetSpeed = moveInput * maxSpeed;
 
-        // Acelerate / decelerate towards target speed.
-        if (targetSpeed > speed) speed = Mathf.MoveTowards(speed, targetSpeed, acceleration * Time.deltaTime);
-        else speed = Mathf.MoveTowards(speed, targetSpeed, deceleration * Time.deltaTime);
+        if (targetSpeed > speed)
+            speed = Mathf.MoveTowards(speed, targetSpeed, acceleration * Time.deltaTime);
+        else
+            speed = Mathf.MoveTowards(speed, targetSpeed, deceleration * Time.deltaTime);
 
-        // If onlyTurnWhileMoving and not moving nullify turnInput.
-        if (onlyTurnWhileMoving && Mathf.Abs(speed) == 0.0f) turnInput = 0.0f;
+        if (onlyTurnWhileMoving && Mathf.Abs(speed) == 0.0f)
+            turnInput = 0.0f;
 
-        // Apply rotationg and translation.
         transform.Rotate(Vector3.up * turnAmount * Time.deltaTime, Space.World);
         transform.Translate(transform.forward * speed * Time.deltaTime, Space.World);
 
-
-
+        // Jumping logic
         if (Input.GetKeyDown(KeyCode.Space) && Grounded == 0)
         {
-            GetComponent<Rigidbody>().AddForce(transform.up * jumpForce, ForceMode.Impulse);
+            rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
             Grounded = 1;
         }
         else if (Input.GetKeyDown(KeyCode.Space) && Grounded == 1)
         {
-            GetComponent<Rigidbody>().AddForce(transform.forward * jumpForce, ForceMode.Impulse);
+            rb.AddForce(transform.forward * jumpForce, ForceMode.Impulse);
             Grounded = 2;
         }
-
     }
+
+    void FixedUpdate()
+    {
+        Vector3 velocity = rb.velocity;
+        Vector3 currentEuler = transform.rotation.eulerAngles;
+        float targetPitch = 0f;
+
+        if (Grounded == 1 || Grounded == 2)
+        {
+            if (velocity.sqrMagnitude > 0.01f)
+            {
+                float flatSpeed = new Vector2(velocity.x, velocity.z).magnitude;
+                targetPitch = Mathf.Atan2(velocity.y, flatSpeed) * Mathf.Rad2Deg;
+            }
+        }
+
+        // Smoothly interpolate pitch toward targetPitch using rotationSpeed
+        float currentPitch = NormalizeAngle(currentEuler.x);
+        float smoothPitch = Mathf.LerpAngle(currentPitch, -targetPitch, Time.fixedDeltaTime * rotationSpeed); // Use rotationSpeed for smoothness
+
+        transform.rotation = Quaternion.Euler(smoothPitch, currentEuler.y, 0f);
+
+        // If child object exists, make sure it follows the parent’s position/rotation
+        if (childObject != null)
+        {
+            childObject.position = transform.position; // Sync position with parent
+            childObject.rotation = transform.rotation; // Sync rotation with parent
+        }
+    }
+
+    // Helper to ensure angle behaves correctly around 360° wraparound
+    float NormalizeAngle(float angle)
+    {
+        if (angle > 180f) angle -= 360f;
+        return angle;
+    }
+
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Ground"))
         {
             Grounded = 0;
         }
-        
     }
+
     private void OnCollisionStay(Collision collision)
     {
         if (collision.gameObject.CompareTag("Boost"))
         {
-            GetComponent<Rigidbody>().AddForce(transform.forward * jumpForce/10, ForceMode.Impulse);
+            rb.AddForce(transform.forward * jumpForce / 10, ForceMode.Impulse);
         }
     }
-
-
-
 }

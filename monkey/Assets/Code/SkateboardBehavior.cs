@@ -15,6 +15,7 @@ public class SkateboardBehaviour : MonoBehaviour
     [Tooltip("A boolean value determining whether or not the car can rotate when not moving.")]
     [SerializeField] private bool onlyTurnWhileMoving = true;
     [SerializeField] private float jumpForce = 100f;
+    Points_SCR points_SCR;
 
     // New variable for controlling the up/down rotation speed
     [Tooltip("The speed at which the skateboard rotates up and down.")]
@@ -32,6 +33,7 @@ public class SkateboardBehaviour : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        points_SCR = GetComponent<Points_SCR>();
 
         // Ensure child object is set (can be assigned in inspector)
         if (childObject == null)
@@ -63,11 +65,13 @@ public class SkateboardBehaviour : MonoBehaviour
         {
             rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
             Grounded = 1;
+            points_SCR.TrickAddPoints();
         }
         else if (Input.GetKeyDown(KeyCode.Space) && Grounded == 1)
         {
             rb.AddForce(transform.forward * jumpForce, ForceMode.Impulse);
             Grounded = 2;
+            points_SCR.TrickAddPoints();
         }
 
     }

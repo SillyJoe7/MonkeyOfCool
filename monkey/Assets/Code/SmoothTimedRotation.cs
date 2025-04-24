@@ -14,6 +14,11 @@ public class SmoothTimedRotation : MonoBehaviour
     private float elapsed = 0f;
     private float totalRotation = 0f;
     private bool rotating = false;
+    Points_SCR points_SCR;
+
+    void Start() {
+        points_SCR = GetComponent<Points_SCR>();
+    }
 
     void Update()
     {
@@ -51,5 +56,6 @@ public class SmoothTimedRotation : MonoBehaviour
         elapsed = 0f; // Reset elapsed time
         totalRotation = 0f; // Reset total rotation applied
         rotating = true; // Begin the rotation
+        points_SCR.TrickAddPoints(7);
     }
 }

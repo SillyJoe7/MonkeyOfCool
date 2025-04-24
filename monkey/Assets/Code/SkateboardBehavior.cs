@@ -1,10 +1,11 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class SkateboardBehaviour : MonoBehaviour
 {
     [Tooltip("A float value determining the max speed this car can go forwards or backwards.")]
     [SerializeField] private float maxSpeed = 10f;
+    [SerializeField] private float rotateAngle = 10f;
     [Tooltip("A float value determining how fast the car accelerates.")]
     [SerializeField] private float acceleration = 10f;
     [Tooltip("A float value determining how fast the car decelerates.")]
@@ -68,6 +69,7 @@ public class SkateboardBehaviour : MonoBehaviour
             rb.AddForce(transform.forward * jumpForce, ForceMode.Impulse);
             Grounded = 2;
         }
+
     }
 
     void FixedUpdate()
@@ -91,7 +93,7 @@ public class SkateboardBehaviour : MonoBehaviour
 
         transform.rotation = Quaternion.Euler(smoothPitch, currentEuler.y, 0f);
 
-        // If child object exists, make sure it follows the parent’s position/rotation
+        // If child object exists, make sure it follows the parentâ€™s position/rotation
         if (childObject != null)
         {
             childObject.position = transform.position; // Sync position with parent
@@ -99,7 +101,7 @@ public class SkateboardBehaviour : MonoBehaviour
         }
     }
 
-    // Helper to ensure angle behaves correctly around 360° wraparound
+    // Helper to ensure angle behaves correctly around 360Â° wraparound
     float NormalizeAngle(float angle)
     {
         if (angle > 180f) angle -= 360f;

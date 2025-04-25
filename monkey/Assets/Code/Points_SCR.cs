@@ -2,32 +2,35 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class Points_SCR : MonoBehaviour {
+public class Points_SCR : MonoBehaviour
+{
     [SerializeField] private Text Points_text;
 
     int Points = 0;
 
-    public void TrickAddPoints() {
-        Points += 10;
-        Points_text.text = "Aura Points: " + Points;
+    // Default trick points (calls the main version with a fixed value)
+    public void TrickAddPoints()
+    {
+        TrickAddPoints(10); // This ensures consistent point handling
     }
 
-    public void TrickAddPoints(int AddPoints) {
+    // Main method for adding any number of points
+    public void TrickAddPoints(int AddPoints)
+    {
         Points += AddPoints;
-        Points_text.text = "Aura Points: " + Points;
-    }
 
-    public void resetScene() {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        // print(SceneManager.GetActiveScene().name); // Used to test can delete later
-    }
-
-/*
-    // Used to test can delete later
-    void Update() {
-        if (Input.GetKeyDown(KeyCode.P)) {
-            resetScene();
+        if (Points_text != null)
+        {
+            Points_text.text = "Aura Points: " + Points;  // Update the UI text to reflect points
+        }
+        else
+        {
+            Debug.LogWarning("Points_text UI reference is not set!");
         }
     }
-*/
+
+    public void resetScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
 }

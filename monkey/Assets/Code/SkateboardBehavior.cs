@@ -15,18 +15,23 @@ public class SkateboardBehaviour : MonoBehaviour
     [Tooltip("A boolean value determining whether or not the car can rotate when not moving.")]
     [SerializeField] private bool onlyTurnWhileMoving = true;
     [SerializeField] private float jumpForce = 100f;
-    Points_SCR points_SCR;
-
-    // New variable for controlling the up/down rotation speed
     [Tooltip("The speed at which the skateboard rotates up and down.")]
     [SerializeField] private float rotationSpeed = 5f;  // Adjust this in the inspector for smooth up/down rotation
 
     // Child object reference
     [SerializeField] private Transform childObject; // Drag the child object in the inspector
 
+    [Header("Air Points Settings")]
+    [Tooltip("Rate at which points are added while in the air.")]
+    [SerializeField] private float pointRate = 10f; // Exposed point rate
+
     private float speed, turnInput, moveInput;
-    public int Grounded = 0;
+    private bool isAirborne = false; // Check if airborne
+    private float airTime = 0f; // Track air-time for points
     private Rigidbody rb;
+    private Points_SCR points_SCR;
+
+    [HideInInspector] public int Grounded = 0; // Expose Grounded status to see in Inspector
 
     public float turnAmount => turnInput * turnRate;
 
@@ -44,6 +49,7 @@ public class SkateboardBehaviour : MonoBehaviour
 
     void Update()
     {
+        // Movement logic
         float targetSpeed;
         turnInput = Input.GetAxisRaw("Horizontal");
         moveInput = Input.GetAxisRaw("Vertical");
@@ -60,67 +66,43 @@ public class SkateboardBehaviour : MonoBehaviour
         transform.Rotate(Vector3.up * turnAmount * Time.deltaTime, Space.World);
         transform.Translate(transform.forward * speed * Time.deltaTime, Space.World);
 
-        // Jumping logic
-        if (Input.GetKeyDown(KeyCode.Space) && Grounded == 0)
+        // Jump logic
+        if (Input.GetKeyDown(KeyCode.Space) && !isAirborne)
         {
-            rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
-            Grounded = 1;
-            points_SCR.TrickAddPoints();
-        }
-        else if (Input.GetKeyDown(KeyCode.Space) && Grounded == 1)
-        {
-            rb.AddForce(transform.forward * jumpForce, ForceMode.Impulse);
-            Grounded = 2;
-            points_SCR.TrickAddPoints();
+            rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);  // Jump
+            isAirborne = true;  // Mark as airborne
         }
 
+        // If airborne, accumulate air-time and add points
+        if (isAirborne)
+        {
+            airTime += Time.deltaTime;
+            points_SCR.TrickAddPoints(Mathf.FloorToInt(airTime * pointRate)); // Add points based on time in air
+        }
     }
 
     void FixedUpdate()
     {
         Vector3 velocity = rb.velocity;
-        Vector3 currentEuler = transform.rotation.eulerAngles;
-        float targetPitch = 0f;
 
-        if (Grounded == 1 || Grounded == 2)
+        // Check if player is grounded
+        if (velocity.y <= 0.1f && IsGrounded()) // If player is falling or about to land
         {
-            if (velocity.sqrMagnitude > 0.01f)
+            if (isAirborne)
             {
-                float flatSpeed = new Vector2(velocity.x, velocity.z).magnitude;
-                targetPitch = Mathf.Atan2(velocity.y, flatSpeed) * Mathf.Rad2Deg;
+                isAirborne = false;  // Player has landed
+                airTime = 0f;  // Reset air-time
             }
         }
-
-        // Smoothly interpolate pitch toward targetPitch using rotationSpeed
-        float currentPitch = NormalizeAngle(currentEuler.x);
-        float smoothPitch = Mathf.LerpAngle(currentPitch, -targetPitch, Time.fixedDeltaTime * rotationSpeed); // Use rotationSpeed for smoothness
-
-        transform.rotation = Quaternion.Euler(smoothPitch, currentEuler.y, 0f);
-
-        // If child object exists, make sure it follows the parent’s position/rotation
-        if (childObject != null)
-        {
-            childObject.position = transform.position; // Sync position with parent
-            childObject.rotation = transform.rotation; // Sync rotation with parent
-        }
     }
 
-    // Helper to ensure angle behaves correctly around 360° wraparound
-    float NormalizeAngle(float angle)
+    // Helper method to check if the player is grounded
+    private bool IsGrounded()
     {
-        if (angle > 180f) angle -= 360f;
-        return angle;
+        return Physics.Raycast(transform.position, Vector3.down, 0.1f);
     }
 
-    void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            Grounded = 0;
-        }
-    }
-
-    private void OnCollisionStay(Collision collision)
+    void OnCollisionStay(Collision collision)
     {
         if (collision.gameObject.CompareTag("Boost"))
         {

@@ -3,106 +3,130 @@
 [RequireComponent(typeof(Rigidbody))]
 public class SkateboardBehaviour : MonoBehaviour
 {
-    [Tooltip("A float value determining the max speed this car can go forwards or backwards.")]
+    [Header("Movement Settings")]
     [SerializeField] private float maxSpeed = 10f;
-    [SerializeField] private float rotateAngle = 10f;
-    [Tooltip("A float value determining how fast the car accelerates.")]
     [SerializeField] private float acceleration = 10f;
-    [Tooltip("A float value determining how fast the car decelerates.")]
     [SerializeField] private float deceleration = 10f;
-    [Tooltip("A float value determining how fast the car can turn to the left or right.")]
     [SerializeField] private float turnRate = 180f;
-    [Tooltip("A boolean value determining whether or not the car can rotate when not moving.")]
     [SerializeField] private bool onlyTurnWhileMoving = true;
-    [SerializeField] private float jumpForce = 100f;
-    [Tooltip("The speed at which the skateboard rotates up and down.")]
-    [SerializeField] private float rotationSpeed = 5f;  // Adjust this in the inspector for smooth up/down rotation
 
-    // Child object reference
-    [SerializeField] private Transform childObject; // Drag the child object in the inspector
+    [Header("Jump Settings")]
+    [SerializeField] private float jumpForce = 100f;
+
+    [Header("Visual Tilt")]
+    [SerializeField] private float rotationSpeed = 5f;
+    [SerializeField] private Transform childObject;
 
     [Header("Air Points Settings")]
-    [Tooltip("Rate at which points are added while in the air.")]
-    [SerializeField] private float pointRate = 10f; // Exposed point rate
+    [SerializeField] private float pointRate = 10f;
 
-    private float speed, turnInput, moveInput;
-    private bool isAirborne = false; // Check if airborne
-    private float airTime = 0f; // Track air-time for points
-    private Rigidbody rb;
-    private Points_SCR points_SCR;
+    [Header("Drift Settings")]
+    [SerializeField] private float driftTurnMultiplier = 2f;
+    [SerializeField] private float driftFrictionMultiplier = 0.5f;
 
-    [HideInInspector] public int Grounded = 0; // Expose Grounded status to see in Inspector
+    private float currentSpeed = 0f;
+    private float speedVelocity = 0f;
+    private float turnInput, moveInput;
+    private bool isDrifting = false;
 
     public float turnAmount => turnInput * turnRate;
+
+    private bool isAirborne = false;
+    private float airTime = 0f;
+
+    private Rigidbody rb;
+    private Points_SCR points_SCR;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         points_SCR = GetComponent<Points_SCR>();
 
-        // Ensure child object is set (can be assigned in inspector)
         if (childObject == null)
-        {
             Debug.LogWarning("Child object not assigned in inspector!");
-        }
     }
 
     void Update()
     {
-        // Movement logic
-        float targetSpeed;
-        turnInput = Input.GetAxisRaw("Horizontal");
-        moveInput = Input.GetAxisRaw("Vertical");
-        targetSpeed = moveInput * maxSpeed;
-
-        if (targetSpeed > speed)
-            speed = Mathf.MoveTowards(speed, targetSpeed, acceleration * Time.deltaTime);
-        else
-            speed = Mathf.MoveTowards(speed, targetSpeed, deceleration * Time.deltaTime);
-
-        if (onlyTurnWhileMoving && Mathf.Abs(speed) == 0.0f)
-            turnInput = 0.0f;
-
-        transform.Rotate(Vector3.up * turnAmount * Time.deltaTime, Space.World);
-        transform.Translate(transform.forward * speed * Time.deltaTime, Space.World);
+        // Read input
+        turnInput = Input.GetAxis("Horizontal");
+        moveInput = Input.GetAxis("Vertical");
+        isDrifting = Input.GetKey(KeyCode.LeftShift);
 
         // Jump logic
         if (Input.GetKeyDown(KeyCode.Space) && !isAirborne)
         {
-            rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);  // Jump
-            isAirborne = true;  // Mark as airborne
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            isAirborne = true;
         }
 
-        // If airborne, accumulate air-time and add points
+        // Track air time
         if (isAirborne)
         {
             airTime += Time.deltaTime;
-            points_SCR.TrickAddPoints(Mathf.FloorToInt(airTime * pointRate)); // Add points based on time in air
+            points_SCR.TrickAddPoints(Mathf.FloorToInt(airTime * pointRate));
         }
     }
 
     void FixedUpdate()
     {
-        Vector3 velocity = rb.velocity;
+        HandleMovement();
+        HandleGroundCheck();
+    }
 
-        // Check if player is grounded
-        if (velocity.y <= 0.1f && IsGrounded()) // If player is falling or about to land
+    private void HandleMovement()
+    {
+        float targetSpeed = moveInput * maxSpeed;
+
+        float smoothTime = (Mathf.Abs(targetSpeed) > Mathf.Abs(currentSpeed)) ? (1f / acceleration) : (1f / deceleration);
+        currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref speedVelocity, smoothTime);
+
+        if (!onlyTurnWhileMoving || Mathf.Abs(currentSpeed) > 0.1f)
+        {
+            float driftMultiplier = isDrifting ? driftTurnMultiplier : 1f;
+            float rotationAmount = turnInput * turnRate * driftMultiplier * Time.fixedDeltaTime;
+            Quaternion turnOffset = Quaternion.Euler(0f, rotationAmount, 0f);
+            rb.MoveRotation(rb.rotation * turnOffset);
+        }
+
+        float frictionMultiplier = isDrifting ? driftFrictionMultiplier : 1f;
+        Vector3 forwardMove = transform.forward * currentSpeed * Time.fixedDeltaTime * frictionMultiplier;
+        rb.MovePosition(rb.position + forwardMove);
+
+        // Optional: sideways drift slide
+        if (isDrifting && Mathf.Abs(turnInput) > 0.1f)
+        {
+            Vector3 sideways = transform.right * turnInput * 0.5f;
+            rb.MovePosition(rb.position + sideways * Time.fixedDeltaTime);
+        }
+
+        // Visual lean/tilt
+        if (childObject != null)
+        {
+            float tiltAngle = -turnInput * rotationSpeed;
+            Quaternion targetTilt = Quaternion.Euler(0f, 0f, tiltAngle);
+            childObject.localRotation = Quaternion.Slerp(childObject.localRotation, targetTilt, Time.deltaTime * 5f);
+        }
+    }
+
+    private void HandleGroundCheck()
+    {
+        if (rb.velocity.y <= 0.1f && IsGrounded())
         {
             if (isAirborne)
             {
-                isAirborne = false;  // Player has landed
-                airTime = 0f;  // Reset air-time
+                isAirborne = false;
+                airTime = 0f;
             }
         }
     }
 
-    // Helper method to check if the player is grounded
     private bool IsGrounded()
     {
-        return Physics.Raycast(transform.position, Vector3.down, 0.1f);
+        return Physics.Raycast(transform.position, Vector3.down, 0.2f);
     }
 
-    void OnCollisionStay(Collision collision)
+    private void OnCollisionStay(Collision collision)
     {
         if (collision.gameObject.CompareTag("Boost"))
         {

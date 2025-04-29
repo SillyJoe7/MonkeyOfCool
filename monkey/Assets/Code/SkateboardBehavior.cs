@@ -14,8 +14,9 @@ public class SkateboardBehaviour : MonoBehaviour
     [SerializeField] private float jumpForce = 100f;
 
     [Header("Visual Tilt")]
-    [SerializeField] private float rotationSpeed = 5f;
     [SerializeField] private Transform childObject;
+    [SerializeField] private float airTiltSpeed = 5f;
+    [SerializeField] private float maxTiltAngle = 30f;
 
     [Header("Air Points Settings")]
     [SerializeField] private float pointRate = 10f;
@@ -28,9 +29,6 @@ public class SkateboardBehaviour : MonoBehaviour
     private float speedVelocity = 0f;
     private float turnInput, moveInput;
     private bool isDrifting = false;
-
-    public float turnAmount => turnInput * turnRate;
-
     private bool isAirborne = false;
     private float airTime = 0f;
 
@@ -48,19 +46,16 @@ public class SkateboardBehaviour : MonoBehaviour
 
     void Update()
     {
-        // Read input
         turnInput = Input.GetAxis("Horizontal");
         moveInput = Input.GetAxis("Vertical");
         isDrifting = Input.GetKey(KeyCode.LeftShift);
 
-        // Jump logic
         if (Input.GetKeyDown(KeyCode.Space) && !isAirborne)
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             isAirborne = true;
         }
 
-        // Track air time
         if (isAirborne)
         {
             airTime += Time.deltaTime;
@@ -72,12 +67,12 @@ public class SkateboardBehaviour : MonoBehaviour
     {
         HandleMovement();
         HandleGroundCheck();
+        HandleTilt();
     }
 
     private void HandleMovement()
     {
         float targetSpeed = moveInput * maxSpeed;
-
         float smoothTime = (Mathf.Abs(targetSpeed) > Mathf.Abs(currentSpeed)) ? (1f / acceleration) : (1f / deceleration);
         currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref speedVelocity, smoothTime);
 
@@ -92,21 +87,22 @@ public class SkateboardBehaviour : MonoBehaviour
         float frictionMultiplier = isDrifting ? driftFrictionMultiplier : 1f;
         Vector3 forwardMove = transform.forward * currentSpeed * Time.fixedDeltaTime * frictionMultiplier;
         rb.MovePosition(rb.position + forwardMove);
+    }
 
-        // Optional: sideways drift slide
-        if (isDrifting && Mathf.Abs(turnInput) > 0.1f)
+    private void HandleTilt()
+    {
+        if (childObject == null) return;
+
+        float tiltX = 0f;
+
+        if (isAirborne)
         {
-            Vector3 sideways = transform.right * turnInput * 0.5f;
-            rb.MovePosition(rb.position + sideways * Time.fixedDeltaTime);
+            float yVelocity = rb.velocity.y;
+            tiltX = Mathf.Lerp(-maxTiltAngle, maxTiltAngle, Mathf.InverseLerp(-10f, 10f, yVelocity));
         }
 
-        // Visual lean/tilt
-        if (childObject != null)
-        {
-            float tiltAngle = -turnInput * rotationSpeed;
-            Quaternion targetTilt = Quaternion.Euler(0f, 0f, tiltAngle);
-            childObject.localRotation = Quaternion.Slerp(childObject.localRotation, targetTilt, Time.deltaTime * 5f);
-        }
+        Quaternion targetTilt = Quaternion.Euler(tiltX, 0f, 0f);
+        childObject.localRotation = Quaternion.Slerp(childObject.localRotation, targetTilt, Time.fixedDeltaTime * airTiltSpeed);
     }
 
     private void HandleGroundCheck()

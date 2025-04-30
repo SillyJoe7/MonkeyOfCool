@@ -261,6 +261,7 @@ GameObject:
   - component: {fileID: 3338560}
   - component: {fileID: 2350722}
   - component: {fileID: 1243614410378671361}
+  - component: {fileID: 565711203579665652}
   m_Layer: 0
   m_Name: Scateboard 1
   m_TagString: Untagged
@@ -359,6 +360,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.2430723, y: 0.078013636, z: 0.959121}
   m_Center: {x: -0.0007271433, y: -0.008862692, z: 0.0046743015}
+--- !u!114 &565711203579665652
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 156642}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3f5eb9d65646b84e990446409fc8d59, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Particle: {fileID: 0}
 --- !u!1 &194348
 GameObject:
   m_ObjectHideFlags: 0
@@ -468,13 +482,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9191059220756311868}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.0030184388, y: -0.017, z: 0.302}
+  m_LocalRotation: {x: 1, y: 0, z: 0, w: 0}
+  m_LocalPosition: {x: 0.0030184388, y: -0.017, z: -0.409}
   m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 453344}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 180, y: 0, z: 0}
 --- !u!198 &7760003577692650406
 ParticleSystem:
   m_ObjectHideFlags: 0
@@ -1053,7 +1067,7 @@ ParticleSystem:
     gravityModifier:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0
+      scalar: 0.1
       minScalar: 0
       maxCurve:
         serializedVersion: 2

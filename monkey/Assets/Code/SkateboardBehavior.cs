@@ -37,7 +37,6 @@ public class SkateboardBehaviour : MonoBehaviour {
     private bool isDrifting = false;
     public bool isAirborne = false;
     private float airTime = 0f;
-
     private Rigidbody rb;
     
 

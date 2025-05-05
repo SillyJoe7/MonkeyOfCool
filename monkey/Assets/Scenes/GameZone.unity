@@ -4488,7 +4488,7 @@ GameObject:
   - component: {fileID: 1062220744}
   m_Layer: 0
   m_Name: World
-  m_TagString: Untagged
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5555,6 +5555,12 @@ MonoBehaviour:
   pointRate: 0
   driftTurnMultiplier: 2
   driftFrictionMultiplier: 0.5
+  groundCheckDistance: 0.3
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  points_SCR: {fileID: 0}
+  isAirborne: 0
 --- !u!54 &1343069761
 Rigidbody:
   m_ObjectHideFlags: 0

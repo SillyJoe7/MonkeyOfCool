@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
-public class SkateboardBehaviour : MonoBehaviour
-{
+public class SkateboardBehaviour : MonoBehaviour {
     [Header("Movement Settings")]
     [SerializeField] private float maxSpeed = 10f;
     [SerializeField] private float acceleration = 10f;
@@ -25,53 +24,53 @@ public class SkateboardBehaviour : MonoBehaviour
     [SerializeField] private float driftTurnMultiplier = 2f;
     [SerializeField] private float driftFrictionMultiplier = 0.5f;
 
+    [Header("GroundCheck Settings")]
+    [SerializeField] private float groundCheckDistance = 0.3f;
+    [SerializeField] private LayerMask groundLayer;
+
+    [Header("Points settings")]
+    [SerializeField] private Points_SCR points_SCR;
+
     private float currentSpeed = 0f;
     private float speedVelocity = 0f;
     private float turnInput, moveInput;
     private bool isDrifting = false;
-    private bool isAirborne = false;
+    public bool isAirborne = false;
     private float airTime = 0f;
 
     private Rigidbody rb;
-    private Points_SCR points_SCR;
+    
 
-    void Start()
-    {
+    void Start() {
         rb = GetComponent<Rigidbody>();
-        points_SCR = GetComponent<Points_SCR>();
 
         if (childObject == null)
             Debug.LogWarning("Child object not assigned in inspector!");
     }
 
-    void Update()
-    {
+    void Update() {
         turnInput = Input.GetAxis("Horizontal");
         moveInput = Input.GetAxis("Vertical");
         isDrifting = Input.GetKey(KeyCode.LeftShift);
 
-        if (Input.GetKeyDown(KeyCode.Space) && !isAirborne)
-        {
+        if (Input.GetKeyDown(KeyCode.Space) && !isAirborne && IsGrounded()) {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             isAirborne = true;
-        }
-
-        if (isAirborne)
-        {
-            airTime += Time.deltaTime;
-            points_SCR.TrickAddPoints(Mathf.FloorToInt(airTime * pointRate));
+            airTime = 0f;
         }
     }
 
-    void FixedUpdate()
-    {
+    void FixedUpdate() {
         HandleMovement();
         HandleGroundCheck();
         HandleTilt();
+
+        if (isAirborne) {
+            airTime += Time.fixedDeltaTime;
+        }
     }
 
-    private void HandleMovement()
-    {
+    private void HandleMovement() {
         float targetSpeed = moveInput * maxSpeed;
         float smoothTime = (Mathf.Abs(targetSpeed) > Mathf.Abs(currentSpeed)) ? (1f / acceleration) : (1f / deceleration);
         currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref speedVelocity, smoothTime);
@@ -89,6 +88,7 @@ public class SkateboardBehaviour : MonoBehaviour
         rb.MovePosition(rb.position + forwardMove);
     }
 
+    /* Old code
     private void HandleTilt()
     {
         if (childObject == null) return;
@@ -103,28 +103,40 @@ public class SkateboardBehaviour : MonoBehaviour
 
         Quaternion targetTilt = Quaternion.Euler(tiltX, 0f, 0f);
         childObject.localRotation = Quaternion.Slerp(childObject.localRotation, targetTilt, Time.fixedDeltaTime * airTiltSpeed);
+    }*/
+
+    // new HandleTilt code
+    private void HandleTilt() {
+        if (childObject == null) return;
+
+        float tiltX = 0f;
+
+        if (isAirborne) {
+            float yVelocity = rb.velocity.y;
+            tiltX = Mathf.Lerp(-maxTiltAngle, maxTiltAngle, Mathf.InverseLerp(-10f, 10f, yVelocity));
+        }
+
+        Quaternion targetTilt = Quaternion.Euler(tiltX, 0f, 0f);
+        childObject.localRotation = Quaternion.Slerp(childObject.localRotation, targetTilt, Time.fixedDeltaTime * airTiltSpeed);
     }
 
-    private void HandleGroundCheck()
-    {
-        if (rb.velocity.y <= 0.1f && IsGrounded())
-        {
-            if (isAirborne)
-            {
-                isAirborne = false;
-                airTime = 0f;
+
+    private void HandleGroundCheck() {
+        if (rb.velocity.y <= 0.1f && IsGrounded() && isAirborne) {
+            isAirborne = false;
+            if (points_SCR != null) {
+                points_SCR.TrickAddPoints(Mathf.FloorToInt(airTime * pointRate));
             }
+            airTime = 0f;
         }
     }
 
-    private bool IsGrounded()
-    {
-        return Physics.Raycast(transform.position, Vector3.down, 0.2f);
+    private bool IsGrounded() {
+        return Physics.Raycast(transform.position, Vector3.down, groundCheckDistance, groundLayer);
     }
 
-    private void OnCollisionStay(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Boost"))
+    private void OnCollisionStay(Collision collision) {
+        if (collision.gameObject.CompareTag("Boost") && rb.velocity.magnitude < maxSpeed * 1.5f)
         {
             rb.AddForce(transform.forward * jumpForce / 10, ForceMode.Impulse);
         }

@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
 
 public class CameraSwitcher : MonoBehaviour
 {
@@ -12,63 +11,39 @@ public class CameraSwitcher : MonoBehaviour
     public float cutsceneDuration = 5f;
 
     [Header("Particle Effects")]
-    public ParticleSystem cutsceneParticles;
+    public ParticleSystem cutsceneParticles; // Drag your particle system here
 
-    [Header("Cutscene Movement")]
-    public List<Transform> cameraWaypoints; // Add in order
-    public float moveDurationPerSegment = 2f;
-
-    [Header("Look At Target")]
-    public Transform lookTarget; // Drag the object you want the camera to look at
+    [Header("Countdown")]
+    public CountdownBar countdownBar; // Reference to the countdown bar script
 
     void Start()
     {
-        StartCoroutine(PlayCutscene());
+        StartCoroutine(SwitchToCutscene());
     }
 
-    IEnumerator PlayCutscene()
+    IEnumerator SwitchToCutscene()
     {
+        // Switch to cutscene camera
         mainCamera.enabled = false;
         cutsceneCamera.enabled = true;
 
+        // Play particles
         if (cutsceneParticles != null)
             cutsceneParticles.Play();
 
-        for (int i = 0; i < cameraWaypoints.Count - 1; i++)
-        {
-            Transform start = cameraWaypoints[i];
-            Transform end = cameraWaypoints[i + 1];
-            yield return StartCoroutine(MoveCameraWithLook(cutsceneCamera.transform, start, end, moveDurationPerSegment));
-        }
+        // Wait for the cutscene duration
+        yield return new WaitForSeconds(cutsceneDuration);
 
-        float remainingTime = Mathf.Max(0f, cutsceneDuration - (moveDurationPerSegment * (cameraWaypoints.Count - 1)));
-        yield return new WaitForSeconds(remainingTime);
-
+        // Stop particles
         if (cutsceneParticles != null)
             cutsceneParticles.Stop();
 
+        // Switch back to the main camera
         cutsceneCamera.enabled = false;
         mainCamera.enabled = true;
-    }
 
-    IEnumerator MoveCameraWithLook(Transform cam, Transform from, Transform to, float duration)
-    {
-        float elapsed = 0f;
-        while (elapsed < duration)
-        {
-            float t = elapsed / duration;
-            cam.position = Vector3.Lerp(from.position, to.position, t);
-
-            if (lookTarget != null)
-                cam.LookAt(lookTarget);
-
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        cam.position = to.position;
-
-        if (lookTarget != null)
-            cam.LookAt(lookTarget);
+        // Start countdown after cutscene ends
+        if (countdownBar != null)
+            countdownBar.BeginCountdown();
     }
 }

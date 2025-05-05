@@ -33,4 +33,19 @@ public class Points_SCR : MonoBehaviour
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
+    public int GetCurrentPoints()
+    {
+        return Points;
+    }
+    public void SetPoints(int newAmount)
+    {
+        Points = newAmount;
+
+        if (Points_text != null)
+        {
+            Points_text.text = "Aura Points: " + Points;
+        }
+    }
+
+
 }

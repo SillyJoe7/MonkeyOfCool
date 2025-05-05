@@ -2,60 +2,58 @@ using UnityEngine;
 
 public class BackflipOfCool : MonoBehaviour
 {
-    [Tooltip("How many degrees to rotate.")]
     public float rotationAmount = 360f;
-
-    [Tooltip("How long (in seconds) to complete the rotation.")]
     public float duration = 2f;
-
-    [Tooltip("Which axis to rotate around (set in the Inspector).")]
-    public Vector3 rotationAxis = Vector3.up;  // You can set this in Unity Inspector
+    public Vector3 rotationAxis = Vector3.up;
 
     private float elapsed = 0f;
     private float totalRotation = 0f;
     private bool rotating = false;
-    Points_SCR points_SCR;
 
-    void Start() {
-        points_SCR = GetComponent<Points_SCR>();
+    [Header("Points System")]
+    public Points_SCR points_SCR;  // Assign this in the Inspector
+    private void Start()
+    {
+        if (points_SCR == null)
+        {
+            points_SCR = FindObjectOfType<Points_SCR>();
+        }
     }
-
     void Update()
     {
-        // Check if "R" key is pressed to start rotation
         if (Input.GetKeyDown(KeyCode.B) && !rotating)
         {
             StartRotation();
         }
 
-        // If we are rotating, update the rotation incrementally
         if (rotating)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
-
-            // Calculate how much rotation to apply this frame
             float rotationThisFrame = rotationAmount * t - totalRotation;
-
-            // Apply the rotation to the object
             transform.Rotate(rotationAxis, rotationThisFrame);
-
-            // Keep track of the total rotation applied so far
             totalRotation += rotationThisFrame;
 
             if (totalRotation >= rotationAmount)
             {
-                rotating = false; // Stop the rotation once we reach the target
+                rotating = false;
             }
         }
     }
 
-    // Function to start the rotation
     private void StartRotation()
     {
-        elapsed = 0f; // Reset elapsed time
-        totalRotation = 0f; // Reset total rotation applied
-        rotating = true; // Begin the rotation
-        points_SCR.TrickAddPoints(7);
+        elapsed = 0f;
+        totalRotation = 0f;
+        rotating = true;
+
+        if (points_SCR != null)
+        {
+            points_SCR.TrickAddPoints(7);
+        }
+        else
+        {
+            Debug.LogWarning("Points_SCR not assigned to BackflipOfCool.");
+        }
     }
 }

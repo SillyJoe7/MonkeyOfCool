@@ -11,4 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/GameZone.unity
     guid: c347993ccdac61f4fb7df06aa7ae8746
+  - enabled: 1
+    path: Assets/Scenes/BeauTest.unity
+    guid: 16a956b1732fd3f4ca815516c322be16
   m_configObjects: {}

@@ -49,7 +49,7 @@ public class BackflipOfCool : MonoBehaviour
 
         if (points_SCR != null)
         {
-            points_SCR.TrickAddPoints(7);
+            points_SCR.TrickAddPoints("BACKFLIP!", 7);
         }
         else
         {

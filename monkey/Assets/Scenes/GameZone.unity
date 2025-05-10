@@ -25134,6 +25134,7 @@ GameObject:
   - component: {fileID: 1993602019}
   - component: {fileID: 1993602018}
   - component: {fileID: 1993602017}
+  - component: {fileID: 1993602023}
   m_Layer: 0
   m_Name: Monkey
   m_TagString: Untagged
@@ -25290,6 +25291,20 @@ LODGroup:
     renderers:
     - renderer: {fileID: 1733799819}
   m_Enabled: 1
+--- !u!114 &1993602023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1993602015}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2bb171ca2e1ed64da0301c0dbcb4621, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  jumpForce: 5
+  skateboard: {fileID: 529814820}
 --- !u!1 &1995655088 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1672193872729845326, guid: ce66a822c9a3f614fbdf2bc93393f17e, type: 3}

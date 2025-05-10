@@ -11,7 +11,7 @@ public class SkateboardBehaviour : MonoBehaviour
     [SerializeField] private bool onlyTurnWhileMoving = true;
 
     [Header("Jump Settings")]
-    [SerializeField] private float jumpForce = 100f;
+    [SerializeField] private float jumpForce = 100f; // Still used by PlayerJump
 
     [Header("Visual Tilt")]
     [SerializeField] private Transform childObject;
@@ -53,13 +53,6 @@ public class SkateboardBehaviour : MonoBehaviour
         turnInput = Input.GetAxis("Horizontal");
         moveInput = Input.GetAxis("Vertical");
         isDrifting = Input.GetKey(KeyCode.LeftShift);
-
-        if (Input.GetKeyDown(KeyCode.Space) && !isAirborne && IsGrounded())
-        {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            isAirborne = true;
-            airTime = 0f;
-        }
     }
 
     void FixedUpdate()
@@ -122,7 +115,12 @@ public class SkateboardBehaviour : MonoBehaviour
         }
     }
 
-    private bool IsGrounded()
+    public void ResetAirTime()
+    {
+        airTime = 0f;
+    }
+
+    public bool IsGrounded()
     {
         return Physics.Raycast(transform.position, Vector3.down, groundCheckDistance, groundLayer);
     }

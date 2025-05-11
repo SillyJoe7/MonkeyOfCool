@@ -50,15 +50,14 @@ public class TimerCheckPoints : MonoBehaviour
 
         if (currentPoints < requiredPointsToWin)
         {
-            GameManager.LoadScene("TitleScreen");
             Debug.Log("You lost! Not enough points.");
-            SceneManager.LoadScene("TitleScreen");  // Scene name if points are too low
+            GameManager.LoadScene("LoseScreen");
         }
         else
         {
-            GameManager.LoadScene("BeauTest");
             Debug.Log("You won! Enough points collected.");
-            SceneManager.LoadScene("BeauTest");  // Scene name if points are enough
+            GameManager.LoadScene("WinScreen");
         }
+
     }
 }

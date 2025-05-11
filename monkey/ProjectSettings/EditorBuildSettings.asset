@@ -12,6 +12,12 @@ EditorBuildSettings:
     path: Assets/Scenes/GameZone.unity
     guid: c347993ccdac61f4fb7df06aa7ae8746
   - enabled: 1
-    path: Assets/Scenes/BeauTest.unity
+    path: Assets/Scenes/WinScreen.unity
     guid: 16a956b1732fd3f4ca815516c322be16
+  - enabled: 1
+    path: Assets/Scenes/LoseScreen.unity
+    guid: db618a6e7b815d949933bf9894b68e1f
+  - enabled: 1
+    path: Assets/Scenes/MattTest.unity
+    guid: b1f21d8e4f58583428cf40dffc663841
   m_configObjects: {}

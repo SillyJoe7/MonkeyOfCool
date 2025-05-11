@@ -3,7 +3,10 @@ guid: 62016feaa056b8a44971f95f4233f2c6
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - pointsScript: {instanceID: 0}
+  - winScene: {fileID: 102900000, guid: 16a956b1732fd3f4ca815516c322be16, type: 3}
+  - loseScene: {fileID: 102900000, guid: db618a6e7b815d949933bf9894b68e1f, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

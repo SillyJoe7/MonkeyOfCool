@@ -7255,7 +7255,7 @@ MonoBehaviour:
   acceleration: 8
   deceleration: 10
   turnRate: 180
-  onlyTurnWhileMoving: 1
+  onlyTurnWhileMoving: 0
   jumpForce: 0
   childObject: {fileID: 1993602016}
   airTiltSpeed: 0
@@ -39563,7 +39563,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 529814815}
-  sensitivity: 2
+  sensitivity: 5
   scrollSpeed: 2
   minDistance: 2
   maxDistance: 10

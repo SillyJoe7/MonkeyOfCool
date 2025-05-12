@@ -21,6 +21,9 @@ public class FollowCameraBehaviour : MonoBehaviour
 
     void Start()
     {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
         if (target)
         {
             yaw = transform.eulerAngles.y;
@@ -59,15 +62,15 @@ public class FollowCameraBehaviour : MonoBehaviour
         if (isPerformingTrick)
             return; // Ignore mouse input during tricks
 
-        if (Input.GetMouseButton(1)) // Right mouse button held
-        {
+       // if (Input.GetMouseButton(1)) // Right mouse button held
+      //  {
             float mouseX = Input.GetAxis("Mouse X") * sensitivity;
             float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
 
             yaw += mouseX;
             pitch -= mouseY;
             pitch = Mathf.Clamp(pitch, -45f, 80f);
-        }
+    //    }
 
         float scrollInput = Input.GetAxis("Mouse ScrollWheel");
         distance -= scrollInput * scrollSpeed;

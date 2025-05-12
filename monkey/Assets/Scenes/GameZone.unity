@@ -4568,8 +4568,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 10, y: 2.220446e-16, z: 10}
-  m_Center: {x: 0, y: -7.275958e-12, z: 0}
+  m_Size: {x: 10, y: 0.027912054, z: 10}
+  m_Center: {x: 0, y: -0.013956027, z: 0}
 --- !u!1 &378693409 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4872018109904800873, guid: 183c0b93409603a4a8910aff1f26507d, type: 3}
@@ -35469,7 +35469,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1855724321
 RectTransform:
   m_ObjectHideFlags: 0
@@ -35486,8 +35486,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 177.8}
-  m_SizeDelta: {x: 160, y: 30}
+  m_AnchoredPosition: {x: -5.901, y: -154.8691}
+  m_SizeDelta: {x: 154.099, y: 22.8299}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1855724322
 MonoBehaviour:
@@ -35519,10 +35519,10 @@ MonoBehaviour:
     m_Alignment: 6
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Press E to grind
+  m_Text: Press [E] to grind
 --- !u!222 &1855724323
 CanvasRenderer:
   m_ObjectHideFlags: 0

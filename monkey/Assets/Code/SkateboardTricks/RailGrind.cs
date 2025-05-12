@@ -27,6 +27,13 @@ public class RailGrind : MonoBehaviour
 
         if (player != null)
             pointsSystem = player.GetComponent<Points_SCR>();
+    
+
+    }
+    public void SetPromptActive(bool state)
+    {
+        if (grindPromptUI != null)
+            grindPromptUI.SetActive(state);
     }
 
     void Update()
@@ -37,9 +44,11 @@ public class RailGrind : MonoBehaviour
         float distToEnd = Vector3.Distance(player.position, railEnd.position);
         bool inRange = distToStart <= snapDistance || distToEnd <= snapDistance;
 
+        Debug.Log(distToStart + " " + distToEnd + " " + snapDistance + " " + inRange);
+
         // Show/hide grind prompt for this rail
         if (grindPromptUI != null)
-            grindPromptUI.SetActive(inRange && !isGrinding);
+           // grindPromptUI.SetActive(inRange || !isGrinding);
 
         // Start grinding when pressing 'E' near the rail
         if (inRange && Input.GetKeyDown(KeyCode.E) && !isGrinding)

@@ -5,6 +5,7 @@ public class SkateboardBehaviour : MonoBehaviour
 {
     [Header("Movement Settings")]
     [SerializeField] private float maxSpeed = 10f;
+    [SerializeField] private float maxBoostSpeed = 50f;
     [SerializeField] private float acceleration = 10f;
     [SerializeField] private float deceleration = 10f;
     [SerializeField] private float turnRate = 180f;
@@ -39,6 +40,7 @@ public class SkateboardBehaviour : MonoBehaviour
     public bool isAirborne = false;
     private float airTime = 0f;
     private Rigidbody rb;
+    private bool isBoosting = false;
 
     void Start()
     {
@@ -67,23 +69,40 @@ public class SkateboardBehaviour : MonoBehaviour
         }
     }
 
-    private void HandleMovement()
-    {
-        float targetSpeed = moveInput * maxSpeed;
-        float smoothTime = (Mathf.Abs(targetSpeed) > Mathf.Abs(currentSpeed)) ? (1f / acceleration) : (1f / deceleration);
-        currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref speedVelocity, smoothTime);
+    private void HandleMovement() {
+        if (isBoosting) {
+            float targetSpeed = moveInput * maxBoostSpeed;
+            float smoothTime = (Mathf.Abs(targetSpeed) > Mathf.Abs(currentSpeed)) ? (1f / acceleration) : (1f / deceleration);
+            currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref speedVelocity, smoothTime);
 
-        if (!onlyTurnWhileMoving || Mathf.Abs(currentSpeed) > 0.1f)
-        {
-            float driftMultiplier = isDrifting ? driftTurnMultiplier : 1f;
-            float rotationAmount = turnInput * turnRate * driftMultiplier * Time.fixedDeltaTime;
-            Quaternion turnOffset = Quaternion.Euler(0f, rotationAmount, 0f);
-            rb.MoveRotation(rb.rotation * turnOffset);
+            if (!onlyTurnWhileMoving || Mathf.Abs(currentSpeed) > 0.1f)
+            {
+                float driftMultiplier = isDrifting ? driftTurnMultiplier : 1f;
+                float rotationAmount = turnInput * turnRate * driftMultiplier * Time.fixedDeltaTime;
+                Quaternion turnOffset = Quaternion.Euler(0f, rotationAmount, 0f);
+                rb.MoveRotation(rb.rotation * turnOffset);
+            }
+
+            float frictionMultiplier = isDrifting ? driftFrictionMultiplier : 1f;
+            Vector3 forwardMove = transform.forward * currentSpeed * Time.fixedDeltaTime * frictionMultiplier;
+            rb.MovePosition(rb.position + forwardMove);
+        } else {
+            float targetSpeed = moveInput * maxSpeed;
+            float smoothTime = (Mathf.Abs(targetSpeed) > Mathf.Abs(currentSpeed)) ? (1f / acceleration) : (1f / deceleration);
+            currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref speedVelocity, smoothTime);
+
+            if (!onlyTurnWhileMoving || Mathf.Abs(currentSpeed) > 0.1f)
+            {
+                float driftMultiplier = isDrifting ? driftTurnMultiplier : 1f;
+                float rotationAmount = turnInput * turnRate * driftMultiplier * Time.fixedDeltaTime;
+                Quaternion turnOffset = Quaternion.Euler(0f, rotationAmount, 0f);
+                rb.MoveRotation(rb.rotation * turnOffset);
+            }
+
+            float frictionMultiplier = isDrifting ? driftFrictionMultiplier : 1f;
+            Vector3 forwardMove = transform.forward * currentSpeed * Time.fixedDeltaTime * frictionMultiplier;
+            rb.MovePosition(rb.position + forwardMove);
         }
-
-        float frictionMultiplier = isDrifting ? driftFrictionMultiplier : 1f;
-        Vector3 forwardMove = transform.forward * currentSpeed * Time.fixedDeltaTime * frictionMultiplier;
-        rb.MovePosition(rb.position + forwardMove);
     }
 
     private void HandleTilt()
@@ -130,6 +149,9 @@ public class SkateboardBehaviour : MonoBehaviour
         if (collision.gameObject.CompareTag("Boost") && rb.velocity.magnitude < maxSpeed * 1.5f)
         {
             rb.AddForce(transform.forward * jumpForce / 10, ForceMode.Impulse);
+            isBoosting = true;
+        } else {
+            isBoosting = false;
         }
     }
 }

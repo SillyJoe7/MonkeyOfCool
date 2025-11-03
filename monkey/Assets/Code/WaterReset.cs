@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ResetOnTouch : MonoBehaviour
 {
-    [SerializeField] private Points_SCR pointsScript;
+  
     public Vector3 resetPosition = new Vector3(0f, 0.3f, 0f);
     public string playerTag = "Player";
 
@@ -10,7 +10,7 @@ public class ResetOnTouch : MonoBehaviour
     {
         if (other.CompareTag(playerTag))
         {
-            Debug.Log("Touched by Player — resetting player position.");
+            Debug.Log("Touched by Player ï¿½ resetting player position.");
 
             // Reset player position
             other.transform.position = resetPosition;
@@ -23,18 +23,8 @@ public class ResetOnTouch : MonoBehaviour
                 rb.angularVelocity = Vector3.zero;
             }
 
-            // Halve the player's points
-            if (pointsScript != null)
-            {
-                int currentPoints = pointsScript.GetCurrentPoints();
-                int newPoints = currentPoints / 2;
-                pointsScript.SetPoints(newPoints);
-                Debug.Log("Points halved to: " + newPoints);
-            }
-            else
-            {
-                Debug.LogWarning("Points_SCR not assigned to ResetOnTouch.");
-            }
+           
+            
         }
     }
 }

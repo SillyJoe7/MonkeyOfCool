@@ -19,8 +19,7 @@ public class SkateboardBehaviour : MonoBehaviour
     [SerializeField] private float airTiltSpeed = 5f;
     [SerializeField] private float maxTiltAngle = 30f;
 
-    [Header("Air Points Settings")]
-    [SerializeField] private float pointRate = 10f;
+    
 
     [Header("Drift Settings")]
     [SerializeField] private float driftTurnMultiplier = 2f;
@@ -30,8 +29,7 @@ public class SkateboardBehaviour : MonoBehaviour
     [SerializeField] private float groundCheckDistance = 0.3f;
     [SerializeField] private LayerMask groundLayer;
 
-    [Header("Points settings")]
-    [SerializeField] private Points_SCR points_SCR;
+    
 
     private float currentSpeed = 0f;
     private float speedVelocity = 0f;
@@ -126,10 +124,6 @@ public class SkateboardBehaviour : MonoBehaviour
         if (rb.velocity.y <= 0.1f && IsGrounded() && isAirborne)
         {
             isAirborne = false;
-            if (points_SCR != null)
-            {
-                points_SCR.TrickAddPoints(Mathf.FloorToInt(airTime * pointRate));
-            }
             airTime = 0f;
         }
     }

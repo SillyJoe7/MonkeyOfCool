@@ -15,7 +15,6 @@ public class RailGrind : MonoBehaviour
     public GameObject grindPromptUI; // Assign a UI text (e.g., "Press E to Grind")
 
     private Transform player;
-    private Points_SCR pointsSystem;
     private float progress = 0f;
     private int direction = 1;
     private bool isGrinding = false;
@@ -25,8 +24,8 @@ public class RailGrind : MonoBehaviour
     {
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
 
-        if (player != null)
-            pointsSystem = player.GetComponent<Points_SCR>();
+        
+
     
 
     }
@@ -125,12 +124,7 @@ public class RailGrind : MonoBehaviour
 
         player.position = newPos;
 
-        // Add points over time
-        if (pointsSystem != null)
-        {
-            int pointsToAdd = Mathf.FloorToInt(pointRate * Time.deltaTime);
-            pointsSystem.TrickAddPoints(pointsToAdd);
-        }
+     
 
         // End grind at the end of rail
         if (t == 0f || t == 1f)

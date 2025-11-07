@@ -16,7 +16,7 @@ public class AirbornePitchWithGroundReset : MonoBehaviour
         if (isGrounded)
         {
             // Keep facing forward, but flatten rotation (no pitch/roll)
-            Vector3 flatForward = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+            Vector3 flatForward = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
             if (flatForward.sqrMagnitude > 0.001f)
             {
                 Quaternion flatRotation = Quaternion.LookRotation(flatForward.normalized);
@@ -25,7 +25,7 @@ public class AirbornePitchWithGroundReset : MonoBehaviour
         }
         else
         {
-            Vector3 velocity = rb.velocity;
+            Vector3 velocity = rb.linearVelocity;
 
             if (velocity.sqrMagnitude > 0.01f)
             {

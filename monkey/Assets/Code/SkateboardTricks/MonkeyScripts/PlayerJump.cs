@@ -40,7 +40,7 @@ public class PlayerJump : MonoBehaviour
 
     void Jump()
     {
-        rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z); // reset Y velocity
+        rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z); // reset Y velocity
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
     }
 

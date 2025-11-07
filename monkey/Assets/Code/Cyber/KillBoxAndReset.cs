@@ -26,7 +26,7 @@ public class KillBoxAndReset : MonoBehaviour
         flipping = true;
 
         // Freeze movement while flipping
-        ScateboardRB.velocity = Vector3.zero;
+        ScateboardRB.linearVelocity = Vector3.zero;
         ScateboardRB.angularVelocity = Vector3.zero;
         ScateboardRB.isKinematic = true;
 

@@ -21,9 +21,9 @@ public class FollowCameraBehaviour : MonoBehaviour
 
     void Start()
     {
-        
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
+
         if (target)
         {
             yaw = transform.eulerAngles.y;
@@ -39,11 +39,11 @@ public class FollowCameraBehaviour : MonoBehaviour
 
         Quaternion rotation = Quaternion.Euler(pitch, yaw, 0f);
 
-        // Position directly relative to the target
+        // Position relative to the target
         Vector3 offset = rotation * new Vector3(0f, 0f, -distance);
         Vector3 desiredPosition = target.transform.position + offset;
 
-        // Collision check (optional: you can remove this if you don't even want collision correction)
+        // Collision check
         Vector3 targetCenter = target.transform.position + Vector3.up * 1.5f;
         Vector3 direction = (desiredPosition - targetCenter).normalized;
         float desiredDistance = Vector3.Distance(targetCenter, desiredPosition);
@@ -59,19 +59,21 @@ public class FollowCameraBehaviour : MonoBehaviour
 
     private void HandleInput()
     {
+        // Stop camera movement if the question panel is active
+        if (UIQuestionManager.Instance != null && UIQuestionManager.Instance.QuestionPanelActive)
+            return;
+
         if (isPerformingTrick)
-            return; // Ignore mouse input during tricks
+            return;
 
-       // if (Input.GetMouseButton(1)) // Right mouse button held
-      //  {
-            float mouseX = Input.GetAxis("Mouse X") * sensitivity;
-            float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
+        // Mouse input for rotation
+        float mouseX = Input.GetAxis("Mouse X") * sensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
 
-            yaw += mouseX;
-            pitch -= mouseY;
-            pitch = Mathf.Clamp(pitch, -45f, 80f);
-    //    }
-
+        yaw += mouseX;
+        pitch -= mouseY;
+        pitch = Mathf.Clamp(pitch, -45f, 80f);
+        // Zoom with scroll wheel
         float scrollInput = Input.GetAxis("Mouse ScrollWheel");
         distance -= scrollInput * scrollSpeed;
         distance = Mathf.Clamp(distance, minDistance, maxDistance);

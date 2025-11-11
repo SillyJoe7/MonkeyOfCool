@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(AudioSource))]
 public class SkateboardBehaviour : MonoBehaviour
 {
     [Header("Movement")]
@@ -27,18 +28,27 @@ public class SkateboardBehaviour : MonoBehaviour
     [Header("Drift Effects")]
     [SerializeField] private ParticleSystem[] driftParticles;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip jumpSound;
+    [SerializeField] private AudioClip landingSound;
+    [SerializeField][Range(0.5f, 1.5f)] private float pitchVariation = 0.1f;
+
     private Rigidbody rb;
+    private AudioSource audioSource;
     private float currentSpeed;
     private float speedVelocity;
     private float turnInput;
     private float moveInput;
     private bool isGrounded;
+    private bool wasGrounded;
     private bool isDrifting;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+
+        audioSource = GetComponent<AudioSource>();
     }
 
     void Update()
@@ -47,18 +57,55 @@ public class SkateboardBehaviour : MonoBehaviour
         turnInput = Input.GetAxis("Horizontal");
         isDrifting = Input.GetKey(KeyCode.LeftShift);
 
-        // Jump
         if (Input.GetButtonDown("Jump") && isGrounded)
+        {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            PlayJumpSound();
+        }
     }
 
     void FixedUpdate()
     {
+        wasGrounded = isGrounded;
         CheckGround();
+
+        // Detect landing transition
+        if (!wasGrounded && isGrounded)
+        {
+            float impactStrength = Mathf.Clamp(rb.linearVelocity.y * -0.1f, 0.1f, 1f);
+            PlayLandingSound(impactStrength);
+        }
+
         HandleMovement();
         HandleTilt();
         HandleDriftParticles();
-        
+    }
+
+    void PlayJumpSound()
+    {
+        if (jumpSound == null || audioSource == null) return;
+
+        // Stop any landing sound currently playing
+        if (audioSource.isPlaying && audioSource.clip == landingSound)
+            audioSource.Stop();
+
+        audioSource.pitch = Random.Range(1f - pitchVariation, 1f + pitchVariation);
+        audioSource.clip = jumpSound;
+        audioSource.Play();
+    }
+
+    void PlayLandingSound(float volume = 1f)
+    {
+        if (landingSound == null || audioSource == null) return;
+
+        // Stop any jump sound currently playing
+        if (audioSource.isPlaying && audioSource.clip == jumpSound)
+            audioSource.Stop();
+
+        audioSource.pitch = Random.Range(1f - pitchVariation, 1f + pitchVariation);
+        audioSource.clip = landingSound;
+        audioSource.volume = volume;
+        audioSource.Play();
     }
 
     void HandleDriftParticles()
@@ -80,10 +127,8 @@ public class SkateboardBehaviour : MonoBehaviour
         }
     }
 
-
     void HandleMovement()
     {
-        // Smooth acceleration/deceleration
         float targetSpeed = moveInput * maxSpeed;
         float smoothTime = Mathf.Abs(targetSpeed) > Mathf.Abs(currentSpeed)
             ? 1f / acceleration
@@ -91,12 +136,10 @@ public class SkateboardBehaviour : MonoBehaviour
 
         currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref speedVelocity, smoothTime);
 
-        // Apply forward movement
         Vector3 move = transform.forward * currentSpeed * Time.fixedDeltaTime;
         if (isDrifting) move *= driftFriction;
         rb.MovePosition(rb.position + move);
 
-        // Turning
         if (!onlyTurnWhileMoving || Mathf.Abs(currentSpeed) > 0.1f)
         {
             float rotation = turnInput * turnRate * Time.fixedDeltaTime;

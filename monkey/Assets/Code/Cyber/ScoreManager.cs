@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.UI; // only if you’re displaying score in UI
+using UnityEngine.UI; // only if youï¿½re displaying score in UI
 
 public class ScoreManager : MonoBehaviour
 {
@@ -18,6 +18,14 @@ public class ScoreManager : MonoBehaviour
     public void AddPoint()
     {
         score++;
+        Debug.Log("Score: " + score);
+
+        if (scoreText != null)
+            scoreText.text = "Score: " + score;
+    }
+    public void AddFive()
+    {
+        score+= 5;
         Debug.Log("Score: " + score);
 
         if (scoreText != null)

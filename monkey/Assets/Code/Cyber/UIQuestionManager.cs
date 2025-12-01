@@ -14,13 +14,13 @@ public class UIQuestionManager : MonoBehaviour
     public TMP_Text cooldownText;
 
     [Header("Choice Buttons")]
-    public Button[] choiceButtons;    // 4 buttons
-    public TMP_Text[] choiceTexts;    // Text of each button
+    public Button[] choiceButtons;
+    public TMP_Text[] choiceTexts;
 
-    private DoorInteraction currentDoor;
+    private InteractableQuiz currentQuiz;
     private int[] shuffledIndices;
 
-    public bool QuestionPanelActive => questionPanel.activeSelf; // For camera & player scripts
+    public bool QuestionPanelActive => questionPanel.activeSelf;
 
     void Awake()
     {
@@ -29,38 +29,40 @@ public class UIQuestionManager : MonoBehaviour
         cooldownText.gameObject.SetActive(false);
     }
 
-    public void ShowQuestion(DoorInteraction door)
+    // Called by InteractableQuiz.TryInteract()
+    public void ShowQuestion(InteractableQuiz quiz)
     {
-        currentDoor = door;
+        currentQuiz = quiz;
 
-        questionText.text = door.questionText;
-        characterImage.sprite = door.characterSprite;
+        var q = quiz.GetCurrentQuestion();
 
-        // Shuffle choices
-        shuffledIndices = new int[door.choices.Length];
-        for (int i = 0; i < door.choices.Length; i++)
+        questionText.text = q.questionText;
+        characterImage.sprite = q.characterSprite;
+
+        // Create array for shuffling
+        shuffledIndices = new int[q.choices.Length];
+        for (int i = 0; i < shuffledIndices.Length; i++)
             shuffledIndices[i] = i;
 
-        // Fisher-Yates shuffle
+        // Fisher–Yates shuffle
         for (int i = shuffledIndices.Length - 1; i > 0; i--)
         {
             int j = Random.Range(0, i + 1);
-            int temp = shuffledIndices[i];
-            shuffledIndices[i] = shuffledIndices[j];
-            shuffledIndices[j] = temp;
+            (shuffledIndices[i], shuffledIndices[j]) = (shuffledIndices[j], shuffledIndices[i]);
         }
 
         // Assign buttons
         for (int i = 0; i < choiceButtons.Length; i++)
         {
-            if (i < door.choices.Length)
+            if (i < q.choices.Length)
             {
                 choiceButtons[i].gameObject.SetActive(true);
-                int choiceIndex = shuffledIndices[i];
-                choiceTexts[i].text = door.choices[choiceIndex];
+
+                int realIndex = shuffledIndices[i];
+                choiceTexts[i].text = q.choices[realIndex];
 
                 choiceButtons[i].onClick.RemoveAllListeners();
-                choiceButtons[i].onClick.AddListener(() => SubmitAnswer(choiceIndex));
+                choiceButtons[i].onClick.AddListener(() => SubmitAnswer(realIndex));
             }
             else
             {
@@ -83,7 +85,7 @@ public class UIQuestionManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        currentDoor.TryAnswer(choiceIndex);
+        currentQuiz.TryAnswer(choiceIndex);
         questionPanel.SetActive(false);
     }
 
@@ -99,7 +101,7 @@ public class UIQuestionManager : MonoBehaviour
         while (remaining > 0)
         {
             cooldownText.text = "Try again in " + Mathf.CeilToInt(remaining) + "s";
-            remaining -= Time.unscaledDeltaTime; // Works while timeScale = 0
+            remaining -= Time.unscaledDeltaTime;
             yield return null;
         }
         cooldownText.gameObject.SetActive(false);

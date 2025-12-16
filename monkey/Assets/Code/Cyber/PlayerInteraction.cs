@@ -1,11 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerInteraction : MonoBehaviour
 {
     [Header("Interaction Settings")]
     [SerializeField] private float interactRange = 3f;
     [SerializeField] private KeyCode interactKey = KeyCode.E;
-    [SerializeField] private LayerMask interactLayer; // Set to "Door" layer
+    [SerializeField] private LayerMask interactLayer; // Doors, monkeys, etc.
 
     private Camera cam;
 
@@ -29,10 +29,28 @@ public class PlayerInteraction : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, interactRange, interactLayer))
         {
-            DoorInteraction door = hit.collider.GetComponentInParent<DoorInteraction>();
-            if (door != null)
+            // 🔹 Score-based door
+            DoorScore scoreDoor = hit.collider.GetComponentInParent<DoorScore>();
+            if (scoreDoor != null)
             {
-                door.TryInteract();
+                scoreDoor.TryInteract();
+                return;
+            }
+
+            // 🔹 Question-based door
+            DoorInteraction questionDoor = hit.collider.GetComponentInParent<DoorInteraction>();
+            if (questionDoor != null)
+            {
+                questionDoor.TryInteract();
+                return;
+            }
+
+            // 🔹 Monkey password interaction
+            MonkeyInteraction monkey = hit.collider.GetComponentInParent<MonkeyInteraction>();
+            if (monkey != null)
+            {
+                monkey.TryInteract();
+                return;
             }
         }
     }

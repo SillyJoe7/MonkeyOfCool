@@ -25,7 +25,16 @@ public class ScoreManager : MonoBehaviour
     }
     public void AddFive()
     {
-        score+= 5;
+        score += 5;
+        Debug.Log("Score: " + score);
+
+        if (scoreText != null)
+            scoreText.text = "Score: " + score;
+    }
+
+    public void AddSeven()
+    {
+        score += 7;
         Debug.Log("Score: " + score);
 
         if (scoreText != null)
